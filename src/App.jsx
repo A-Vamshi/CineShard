@@ -5,6 +5,7 @@ import Spinner from "./components/Spinner";
 import MovieCard from "./components/MovieCard";
 import { useDebounce } from "react-use";
 import { getTrendingMovies, updateSearchCount } from "./appwrite";
+import { SignedIn, SignedOut, SignIn, SignInButton, UserButton } from '@clerk/clerk-react';
 
 const API_BASE_URL = "https://api.themoviedb.org/3";
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
@@ -92,99 +93,108 @@ const App = () => {
 
   return (
     <main>
-      <div className="pattern">
-        <div className="wrapper">
-          <header>
-            <img src="./hero.png" alt="Hero Banner"></img>
-            <h1>
-              Find <span className="text-gradient">Movies</span> Without Hassle
-            </h1>
-            <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-          </header>
-
-          {trendingMovies.length > 0 && (
-            <section className="trending">
-              <h2>Trending Movies</h2>
-              <ul>
-                {trendingMovies.map((movie, index) => (
-                  <li key={movie.$id}>
-                    <p>{index + 1}</p>
-                    <img src={movie.poster_url} alt={movie.title} />
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
-          <section className="all-movies">
-            <h2>All Movies</h2>
-
-            <div className="filters flex flex-wrap gap-4 my-4">
-              {genres.length > 0 ? (
-                <select
-                  className="p-2 rounded bg-gray-800 text-white"
-                  value={selectedGenre}
-                  onChange={(e) => {
-                    setSelectedGenre(e.target.value);
-                    setPage(1);
-                  }}
-                >
-                  <option value="">All Genres</option>
-                  {genres.map((genre) => (
-                    <option key={genre.id} value={genre.id}>
-                      {genre.name}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <p className="text-gray-400">
-                  Loading genres or failed to fetch.
-                </p>
-              )}
-            </div>
-
-            {isLoading ? (
-              <Spinner />
-            ) : errorMessage ? (
-              <p className="text-red-500">{errorMessage}</p>
-            ) : movieList.length === 0 && debouncedSearchTerm ? (
-              <p className="text-white">No search results found</p>
-            ) : (
-              <>
-                <ul>
-                  {movieList.map((movie) => (
-                    <MovieCard key={movie.id} movie={movie} />
-                  ))}
-                </ul>
-
-                {totalPages > 1 && (
-                  <div className="pagination flex gap-4 justify-center items-center mt-4">
-                    <button
-                      className="bg-gray-700 px-3 py-1 rounded"
-                      onClick={() => setPage((p) => Math.max(p - 1, 1))}
-                      disabled={page === 1}
-                    >
-                      Prev
-                    </button>
-                    <span className="text-white">
-                      Page {page} of {totalPages}
-                    </span>
-                    <button
-                      className="bg-gray-700 px-3 py-1 rounded"
-                      onClick={() =>
-                        setPage((p) => Math.min(p + 1, totalPages))
-                      }
-                      disabled={page === totalPages}
-                    >
-                      Next
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
+        <SignedOut>
+          <section className="w-full h-[100vh] flex justify-center items-center">
+            <SignIn />
           </section>
-        </div>
-      </div>
+        </SignedOut>
+      <SignedIn>
+        <main>
+          <div className="pattern">
+            <div className="wrapper">
+              <header>
+                <img src="./hero.png" alt="Hero Banner"></img>
+                <h1>
+                  Find <span className="text-gradient">Movies</span> Without Hassle
+                </h1>
+                <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+              </header>
+
+              {trendingMovies.length > 0 && (
+                <section className="trending">
+                  <h2>Trending Movies</h2>
+                  <ul>
+                    {trendingMovies.map((movie, index) => (
+                      <li key={movie.$id}>
+                        <p>{index + 1}</p>
+                        <img src={movie.poster_url} alt={movie.title} />
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+
+              <section className="all-movies">
+                <h2>All Movies</h2>
+
+                <div className="filters flex flex-wrap gap-4 my-4">
+                  {genres.length > 0 ? (
+                    <select
+                      className="p-2 rounded bg-gray-800 text-white"
+                      value={selectedGenre}
+                      onChange={(e) => {
+                        setSelectedGenre(e.target.value);
+                        setPage(1);
+                      }}
+                    >
+                      <option value="">All Genres</option>
+                      {genres.map((genre) => (
+                        <option key={genre.id} value={genre.id}>
+                          {genre.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <p className="text-gray-400">
+                      Loading genres or failed to fetch.
+                    </p>
+                  )}
+                </div>
+
+                {isLoading ? (
+                  <Spinner />
+                ) : errorMessage ? (
+                  <p className="text-red-500">{errorMessage}</p>
+                ) : movieList.length === 0 && debouncedSearchTerm ? (
+                  <p className="text-white">No search results found</p>
+                ) : (
+                  <>
+                    <ul>
+                      {movieList.map((movie) => (
+                        <MovieCard key={movie.id} movie={movie} />
+                      ))}
+                    </ul>
+
+                    {totalPages > 1 && (
+                      <div className="pagination flex gap-4 justify-center items-center mt-4">
+                        <button
+                          className="bg-gray-700 px-3 py-1 rounded"
+                          onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                          disabled={page === 1}
+                        >
+                          Prev
+                        </button>
+                        <span className="text-white">
+                          Page {page} of {totalPages}
+                        </span>
+                        <button
+                          className="bg-gray-700 px-3 py-1 rounded"
+                          onClick={() =>
+                            setPage((p) => Math.min(p + 1, totalPages))
+                          }
+                          disabled={page === totalPages}
+                        >
+                          Next
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </section>
+            </div>
+          </div>
+        </main>
+      </SignedIn>
     </main>
   );
 };
